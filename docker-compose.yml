@@ -1,0 +1,72 @@
+services:
+  nginx:
+    build:
+      context: .
+      dockerfile: ./nginx/Dockerfile
+    restart: always
+    ports:
+      - "80:80" # support http redirect
+      - "443:443"
+    networks:
+      - backend
+    depends_on:
+      - sanic
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/api.conf:/etc/nginx/conf.d/api.conf:ro
+      - ./nginx/www.conf:/etc/nginx/conf.d/www.conf:ro
+
+  sanic:
+    build:
+      context: ./service
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - "8000:8000"
+    expose:
+      - 8000
+    networks:
+      - backend
+    depends_on:
+      redis:
+        condition: service_healthy
+    env_file:
+      - ./service/.env
+
+  redis:
+    build:
+      context: ./redis
+      dockerfile: Dockerfile
+    restart: always
+    networks:
+      - backend
+    depends_on:
+      - postgresql
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 2s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    volumes:
+      - redis_data:/data
+
+  postgresql:
+    image: postgres:16
+    restart: always
+    networks:
+      - backend
+    env_file:
+      - db.env
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+networks:
+  backend:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:
