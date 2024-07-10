@@ -1,9 +1,9 @@
 from time import time
 
+import redis
+
 from constants.server import SERVER_NAMES_LOWER
 from models.redis_cache import ServerCharacters, ServerInfo, ServerLFMs
-
-import redis
 
 
 class RedisSingleton:
@@ -44,6 +44,9 @@ class RedisSingleton:
         self.client.json().set("server_info", path="$", obj=server_info)
         print(self.client.json().get("server_info"))  # TODO: remove
 
+    def close(self):
+        self.client.close()
+
     def get_client(self):
         return self.client
 
@@ -57,3 +60,7 @@ def get_redis_client():
 
 def initialize_redis():
     redis_singleton.initialize()
+
+
+def close_redis():
+    redis_singleton.close()

@@ -14,7 +14,7 @@ services:
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./nginx/api.conf:/etc/nginx/conf.d/api.conf:ro
-      - ./nginx/www.conf:/etc/nginx/conf.d/www.conf:ro
+      # - ./nginx/www.conf:/etc/nginx/conf.d/www.conf:ro
 
   sanic:
     build:
@@ -41,7 +41,7 @@ services:
     networks:
       - backend
     depends_on:
-      - postgresql
+      - postgres
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 2s
@@ -51,13 +51,15 @@ services:
     volumes:
       - redis_data:/data
 
-  postgresql:
-    image: postgres:16
+  postgres:
+    build:
+      context: ./postgres
+      dockerfile: Dockerfile
     restart: always
     networks:
       - backend
     env_file:
-      - db.env
+      - .env
     ports:
       - "5432:5432"
     volumes:
