@@ -1,7 +1,8 @@
 import re
 
-from constants.routes import UNSECURED_ROUTES, VERSION_PATTERN
 from sanic.request import Request
+
+from constants.routes import UNSECURED_ROUTES, VERSION_PATTERN
 
 
 def is_route_unsecured(request: Request) -> bool:

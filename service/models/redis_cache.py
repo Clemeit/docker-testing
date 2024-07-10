@@ -1,6 +1,7 @@
+from pydantic import BaseModel
+
 from models.character import Character
 from models.lfm import LFM
-from pydantic import BaseModel
 
 
 class ServerInfo(BaseModel):

@@ -1,10 +1,11 @@
 from time import time
 
+from sanic.request import Request
+from sanic.response import json
+
 from client.redis import get_redis_client
 from constants.server import SERVER_NAMES_LOWER
 from models.server import Server
-from sanic.request import Request
-from sanic.response import json
 from utils.validate_input import validate_server_name
 
 redis_client = get_redis_client()

@@ -1,5 +1,6 @@
-from models.character import Character
 from pydantic import BaseModel
+
+from models.character import Character
 
 
 class QuestLevel(BaseModel):

@@ -1,11 +1,12 @@
 from time import time
 
-from client.redis import get_redis_client
-from constants.server import SERVER_NAMES_LOWER
-from models.server import Server
 from sanic import Blueprint
 from sanic.request import Request
 from sanic.response import json
+
+from client.redis import get_redis_client
+from constants.server import SERVER_NAMES_LOWER
+from models.server import Server
 from utils.validate_input import validate_server_info_key, validate_server_name
 
 servers_bp = Blueprint(name="ServersBlueprint", url_prefix="/servers", version=1)

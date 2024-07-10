@@ -6,5 +6,4 @@ UNSECURED_ROUTES = [
     ("GET", r"^/lfms.*$"),
     ("GET", r"^/servers.*$"),
 ]
-
 VERSION_PATTERN = re.compile(r"^/v\d+/")

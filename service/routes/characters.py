@@ -1,6 +1,7 @@
-from routes.common.common_methods import get_all, get_by_server, set, update
 from sanic import Blueprint
 from sanic.request import Request
+
+from routes.common.common_methods import get_all, get_by_server, set, update
 
 characters_bp = Blueprint(
     name="CharactersBlueprint", url_prefix="/characters", version=1
