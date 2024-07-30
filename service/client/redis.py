@@ -1,9 +1,13 @@
+import os
 from time import time
 
 import redis
 
 from constants.server import SERVER_NAMES_LOWER
 from models.redis_cache import ServerCharacters, ServerInfo, ServerLFMs
+
+REDIS_HOST = os.getenv("REDIS_HOST")
+REDIS_PORT = int(os.getenv("REDIS_PORT"))
 
 
 class RedisSingleton:
@@ -14,7 +18,7 @@ class RedisSingleton:
         if not cls._instance:
             print("Creating Redis client...")
             cls._instance = super(RedisSingleton, cls).__new__(cls, *args, **kwargs)
-            cls._instance.client = redis.Redis(host="redis", port=6379)
+            cls._instance.client = redis.Redis(host=REDIS_HOST, port=REDIS_PORT)
             # cls._instance.initialize()
         return cls._instance
 
@@ -25,13 +29,13 @@ class RedisSingleton:
             return
         print("Initializing Redis database...")
         self.client.flushall()
-        server_info = {}
+        # server_info = {}
         for index, server in enumerate(SERVER_NAMES_LOWER):
             # info for every server is consolidated into a single dictionary
-            server_info[server] = ServerInfo(
-                index=index,
-                created=time(),
-            ).model_dump()
+            # server_info[server] = ServerInfo(
+            #     index=index,
+            #     created=time(),
+            # ).model_dump()
 
             # characters and lfms for every server are stored in separate dictionaries
             server_characters = ServerCharacters().model_dump()
@@ -41,7 +45,7 @@ class RedisSingleton:
             )
             self.client.json().set(f"lfms:{server}", path="$", obj=server_lfms)
 
-        self.client.json().set("server_info", path="$", obj=server_info)
+        self.client.json().merge("server_info", path="$", obj={})
         print(self.client.json().get("server_info"))  # TODO: remove
 
     def close(self):

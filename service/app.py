@@ -4,13 +4,14 @@ from sanic import Sanic
 from sanic.request import Request
 from sanic.response import json
 
-from client.postgres import close_db_pool, create_db_pool
+from client.postgres import close_postgres_client
 from client.redis import close_redis, initialize_redis
 from routes.characters import characters_bp
 from routes.health import health_bp
 from routes.lfms import lfms_bp
 from routes.servers import servers_bp
 from utils.routes import is_route_unsecured
+from reports.game.server_status import update_server_status
 
 # Load environment variables
 API_KEY = os.getenv("API_KEY")
@@ -29,7 +30,7 @@ app.blueprint([lfms_bp, characters_bp, servers_bp, health_bp])
 async def set_up_connections(app, loop):
     """Set up the redis and database connection before the server starts."""
     initialize_redis()
-    await create_db_pool(app)
+    update_server_status()
 
 
 # Tear down the database connection
@@ -37,7 +38,7 @@ async def set_up_connections(app, loop):
 async def close_connections(app, loop):
     """Close the redis and database connection after the server stops."""
     close_redis()
-    await close_db_pool(app)
+    await close_postgres_client()
 
 
 # Middleware to check API key for secured routes
