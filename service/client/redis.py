@@ -2,9 +2,11 @@ import os
 from time import time
 
 import redis
+import json
 
 from constants.server import SERVER_NAMES_LOWER
 from models.redis_cache import ServerCharacters, ServerInfo, ServerLFMs
+from models.redis_cache import CACHE_MODEL
 
 REDIS_HOST = os.getenv("REDIS_HOST")
 REDIS_PORT = int(os.getenv("REDIS_PORT"))
@@ -24,29 +26,38 @@ class RedisSingleton:
 
     def initialize(self):
         # Sets up the redis database with the server names as keys
-        if self.client.dbsize() > 0:
-            print("Redis database already initialized. Skipping...")
-            return
+        # if self.client.dbsize() > 0:
+        #     print("Redis database already initialized. Skipping...")
+        #     return
         print("Initializing Redis database...")
         self.client.flushall()
         # server_info = {}
-        for index, server in enumerate(SERVER_NAMES_LOWER):
-            # info for every server is consolidated into a single dictionary
-            # server_info[server] = ServerInfo(
-            #     index=index,
-            #     created=time(),
-            # ).model_dump()
+        # for index, server in enumerate(SERVER_NAMES_LOWER):
+        #     # info for every server is consolidated into a single dictionary
+        #     # server_info[server] = ServerInfo(
+        #     #     index=index,
+        #     #     created=time(),
+        #     # ).model_dump()
 
-            # characters and lfms for every server are stored in separate dictionaries
-            server_characters = ServerCharacters().model_dump()
-            server_lfms = ServerLFMs().model_dump()
-            self.client.json().set(
-                f"characters:{server}", path="$", obj=server_characters
-            )
-            self.client.json().set(f"lfms:{server}", path="$", obj=server_lfms)
+        #     # characters and lfms for every server are stored in separate dictionaries
+        #     server_characters = ServerCharacters().model_dump()
+        #     server_lfms = ServerLFMs().model_dump()
+        #     self.client.json().set(
+        #         f"characters:{server}", path="$", obj=server_characters
+        #     )
+        #     self.client.json().set(f"lfms:{server}", path="$", obj=server_lfms)
 
-        self.client.json().merge("server_info", path="$", obj={})
-        print(self.client.json().get("server_info"))  # TODO: remove
+        for key, value in CACHE_MODEL.items():
+            print(key, value.model_dump())
+            self.client.json().set(key, path="$", obj=value.model_dump())
+        # self.client.json().merge("game_info", path="$", obj={})
+        # print("Redis database initialized.")
+        # print("====================================")
+        # print("game_info", self.client.json().get("game_info"))  # TODO: remove
+        # print(
+        #     "characters:thelanis", self.client.json().get("characters:thelanis")
+        # )  # TODO: remove
+        # print("lfms:khyber", self.client.json().get("lfms:khyber"))  # TODO: remove
 
     def close(self):
         self.client.close()

@@ -9,9 +9,9 @@ from client.redis import close_redis, initialize_redis
 from routes.characters import characters_bp
 from routes.health import health_bp
 from routes.lfms import lfms_bp
-from routes.servers import servers_bp
+from routes.game import game_bp
 from utils.routes import is_route_unsecured
-from reports.game.server_status import update_server_status
+from reports.game.server_status import get_server_status_scheduler
 
 # Load environment variables
 API_KEY = os.getenv("API_KEY")
@@ -22,7 +22,13 @@ APP_WORKERS = int(os.getenv("APP_WORKERS") or 1)
 
 # Set up Sanic app
 app = Sanic("ddo-audit")
-app.blueprint([lfms_bp, characters_bp, servers_bp, health_bp])
+app.blueprint([lfms_bp, characters_bp, game_bp, health_bp])
+
+
+# Set up all of the updaters
+start_server_status_polling, stop_server_status_polling = get_server_status_scheduler(
+    interval=5
+)
 
 
 # Set up the redis and database connection
@@ -30,7 +36,7 @@ app.blueprint([lfms_bp, characters_bp, servers_bp, health_bp])
 async def set_up_connections(app, loop):
     """Set up the redis and database connection before the server starts."""
     initialize_redis()
-    update_server_status()
+    start_server_status_polling()
 
 
 # Tear down the database connection
@@ -38,6 +44,7 @@ async def set_up_connections(app, loop):
 async def close_connections(app, loop):
     """Close the redis and database connection after the server stops."""
     close_redis()
+    stop_server_status_polling()
     await close_postgres_client()
 
 

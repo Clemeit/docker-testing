@@ -25,6 +25,11 @@ async def set(request: Request, data_type: str):
             path=f"{data_type}",
             obj={datum["id"]: datum for datum in data},
         )
+        redis_client.json().merge(
+            name="game_info",
+            path=f"servers.{server}",
+            obj={f"{data_type[:-1]}_count": len(data)},
+        )
         update_count_and_last_updated(server, data_type)
     return json(body={"message": f"{data_type} set"}, status=202)
 
